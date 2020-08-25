@@ -6,13 +6,9 @@ build:
 
 run:
 	docker run \
-		-v `pwd`/src:/go/src/adventurer \
+		-v `pwd`/src:/go/src/github.com/ughvj/adventurer \
+		--env-file ./vars.env \
 		$(IMAGE) go run main.go
-
-shell:
-	docker run -it \
-		-v `pwd`/src:/go/src/adventurer \
-		$(IMAGE) /bin/bash
 
 rm:
 	docker rm -f $(CONTAINER)

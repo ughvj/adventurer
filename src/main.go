@@ -1,54 +1,28 @@
 package main
 
 import (
+	"context"
 	"log"
-	"time"
+	"github.com/ughvj/adventurer/pb"
+	"google.golang.org/grpc"
 )
-
 func main() {
-	log.Println("Let's GO on an adventure...")
-	txt1 := make(chan string)
-	txt3 := make(chan string)
-	txt10 := make(chan string)
-	defer close(txt1)
-	defer close(txt3)
-	defer close(txt10)
-
-	go remaining1(txt1)
-	go remaining3(txt3)
-	go remaining10(txt10)
-
-	loop:
-		for {
-			select {
-			case v := <- txt1:
-				log.Println("arrived: " + v)
-			case v := <- txt3:
-				log.Println("arrived: " + v)
-			case v := <- txt10:
-				log.Println("arrived: " + v)
-				break loop
-			}
-		}
-}
-
-func remaining1(txt chan string) {
-	for {
-		time.Sleep(1 * time.Second)
-		txt <- "1 second"
+	log.Println("** Start adventure...")
+	conn, err := grpc.Dial("host.docker.internal:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("** Fail to connect the guild...:", err)
 	}
-}
-
-func remaining3(txt chan string) {
-	for {
-		time.Sleep(3 * time.Second)
-		txt <- "3 seconds"
+	defer conn.Close()
+	
+	client := pb.NewAuthClient(conn)
+	req := &pb.LoginRequest{
+		Id: 1,
+		Secret: "secret",
 	}
-}
-
-func remaining10(txt chan string) {
-	for {
-		time.Sleep(10 * time.Second)
-		txt <- "10 seconds"
+	
+	res, err := client.Login(context.TODO(), req)
+	if err != nil {
+		log.Fatal("** Fail to login the guild...:", err)
 	}
+	log.Println(res.GetToken())
 }
